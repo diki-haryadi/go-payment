@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      args:
+        - GO_FILE=example/server/server.go
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_HOST=mysql
+      - DB_USER=root
+      - DB_PASSWORD=root
+      - DB_NAME=gorm_db
+      - DB_PORT=3306
+    volumes:
+      - ./example/server/secret.yaml:/app/example/server/secret.yaml
+      - ./example/server/payment-methods.yaml:/app/example/server/payment-methods.yaml
+      - ./example/server/config.yaml:/app/example/server/config.yaml
+    depends_on:
+      - mysql
+
+  mysql:
+    image: mysql:8.0
+    ports:
+      - "3306:3306"
+    environment:
+      - MYSQL_ROOT_PASSWORD=root
+      - MYSQL_DATABASE=gorm_db
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./example/server/gorm.db:/docker-entrypoint-initdb.d/gorm.db
+
+volumes:
+  mysql_data:
